@@ -1,0 +1,39 @@
+{
+    "objective": [
+        "1",
+        "6",
+        "18.72"
+    ],
+    "normalization": [
+        "1",
+        "0",
+        "0"
+    ],
+    "PositiveMatrixWithPrefactorArray": [
+        {
+            "DampedRational": {
+                "base": "0.367879",
+                "poles": [],
+                "constant": "1"
+            },
+            "polynomials": [
+                [
+                    [
+                        [
+                            "1"
+                        ],
+                        [
+                            "6",
+                            "-1"
+                        ],
+                        [
+                            "18.72",
+                            "-6.00",
+                            "0.25"
+                        ]
+                    ]
+                ]
+            ]
+        }
+    ]
+}

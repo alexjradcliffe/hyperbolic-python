@@ -146,7 +146,12 @@ def outputFromTxt(lmax, normalization, directory):
     return y
 
 def OPE_bound(lmax, prec):
-    directory = "/Users/alexradcliffe/kcl/hyperbolic-python"
+    mac = True
+    if mac:
+        directory = "/Users/alexradcliffe/kcl/hyperbolic-python"
+    else:
+        directory = "/users/k21187236/scratch/hyperbolic-python"
+    os.chdir(directory)
     getcontext().prec=prec
     nn = 6
     normalization = ["1"] + ["0"] * lmax
@@ -174,8 +179,12 @@ def OPE_bound(lmax, prec):
     }
     with open(f"{directory}/tmp/opepy{lmax}.json", "w") as f:
         json.dump(jsonInput, f, indent=4)
-    sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision=1024 --input=/usr/local/share/sdpb/opepy{lmax}.json --output=/usr/local/share/sdpb/opepy{lmax}"
-    sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision=1024 --procsPerNode=4 -s /usr/local/share/sdpb/opepy{lmax}"
+    if mac:
+        sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision=1024 --input=/usr/local/share/sdpb/opepy{lmax}.json --output=/usr/local/share/sdpb/opepy{lmax}"
+        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision=1024 --procsPerNode=4 -s /usr/local/share/sdpb/opepy{lmax}"
+    else:
+        sdp2input = f"sdp2input --precision=1024 --input={directory}/tmp/opepy{lmax}.json --output={directory}/tmp/opepy{lmax}"
+        sdpb = f"sdpb --precision=1024 --procsPerNode=4 -s {directory}/tmp/opepy{lmax}"
     os.system(sdp2input)
     os.system(sdpb)
     bound = read_output(lmax, directory)
@@ -187,6 +196,8 @@ def OPE_bound(lmax, prec):
     with open(f"{directory}/outputJsons/opepy{lmax}_out.json", "w") as f:
         json.dump(jsonResults, f, indent=4)
 
-for i in range(2, 31):
-    print(f"lmax={i}")
-    OPE_bound(i, 200)
+# for i in range(2, 31):
+#     print(f"lmax={i}")
+#     OPE_bound(i, 200)
+
+OPE_bound(7, 200)

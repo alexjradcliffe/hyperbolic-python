@@ -1,0 +1,8 @@
+{
+    "pythonPrec" : 500,
+    "sdpbPrec" : 2048,
+    "lmaxLower": 2,
+    "lmaxUpper": 31,
+    "procsPerNode": 4,
+    "mac": true
+}

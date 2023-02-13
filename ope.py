@@ -146,7 +146,7 @@ def outputFromTxt(lmax, normalization, directory):
     y.insert(index, (1-sum(map(operator.mul, n, y))/n0))
     return y
 
-def OPE_bound(lmax, pythonPrec, sdpbPrec, procsPerNode, mac):
+def OPE_bound(lmax, pythonPrec, sdpbPrec, dualityGapThreshold, procsPerNode, mac):
     if mac:
         directory = "/Users/alexradcliffe/kcl/hyperbolic-python"
     else:
@@ -180,10 +180,11 @@ def OPE_bound(lmax, pythonPrec, sdpbPrec, procsPerNode, mac):
         json.dump(jsonInput, f, indent=4)
     if mac:
         sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision={sdpbPrec} --input=/usr/local/share/sdpb/opepy{lmax}.json --output=/usr/local/share/sdpb/opepy{lmax}"
-        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} -s /usr/local/share/sdpb/opepy{lmax}"
+        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/opepy{lmax}"
+        print(sdpb)
     else:
         sdp2input = f"sdp2input --precision={sdpbPrec} --input={directory}/tmp/opepy{lmax}.json --output={directory}/tmp/opepy{lmax}"
-        sdpb = f"sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} -s {directory}/tmp/opepy{lmax}"
+        sdpb = f"sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s {directory}/tmp/opepy{lmax}"
     os.system(sdp2input)
     os.system(sdpb)
     bound = read_output(lmax, directory)
@@ -211,7 +212,11 @@ if __name__ == "__main__":
     lmaxLower = config["lmaxLower"]
     lmaxUpper = config["lmaxUpper"]
     procsPerNode = config["procsPerNode"]
+    dualityGapThreshold = config["dualityGapThreshold"]
+    oddOnly = config["oddOnly"]
     mac = config["mac"]
     getcontext().prec = pythonPrec
-    for lmax in range(lmaxLower, lmaxUpper + 1):
-        OPE_bound(lmax, pythonPrec, sdpbPrec, procsPerNode, mac)
+    step = 2 if oddOnly else 1
+    for lmax in range(2 * int(lmaxLower / 2) + 1, lmaxUpper + 1, step): # 
+        OPE_bound(lmax, pythonPrec, sdpbPrec, dualityGapThreshold, procsPerNode, mac)
+

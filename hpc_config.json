@@ -1,8 +1,10 @@
 {
+    "lmaxLower": 3,
+    "lmaxUpper": 31,
+    "procsPerNode": 1,
     "pythonPrec" : 500,
     "sdpbPrec" : 2048,
-    "lmaxLower": 2,
-    "lmaxUpper": 51,
-    "procsPerNode": 1,
-    "mac": false
+    "dualityGapThreshold" : 1e-30,
+    "mac": false,
+    "oddOnly" : true
 }

@@ -192,6 +192,7 @@ def OPE_bound(lmax, pythonPrec, sdpbPrec, dualityGapThreshold, procsPerNode, mac
     jsonResults = {"lmax" : lmax,
                 "pythonPrec" : pythonPrec,
                 "sdpbPrec" : sdpbPrec,
+                "dualityGapThreshold" : dualityGapThreshold,
                 "procsPerNode" : procsPerNode,
                 "bound" : str(bound),
                 "coefficients" : list(map(str, coefficients))}
@@ -217,6 +218,6 @@ if __name__ == "__main__":
     mac = config["mac"]
     getcontext().prec = pythonPrec
     step = 2 if oddOnly else 1
-    for lmax in range(2 * int(lmaxLower / 2) + 1, lmaxUpper + 1, step): # 
+    for lmax in range(lmaxLower + 1 if lmaxLower % 2 == 0 else lmaxLower, lmaxUpper + 1, step):
         OPE_bound(lmax, pythonPrec, sdpbPrec, dualityGapThreshold, procsPerNode, mac)
 

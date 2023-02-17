@@ -2,10 +2,9 @@ import json
 import os
 
 
-
 if __name__ == "__main__":
-    data = "/Users/alexradcliffe/kcl/hyperbolic-python/clusterData/"
     data = "/Users/alexradcliffe/kcl/hyperbolic-python/macData/"
+    data = "/Users/alexradcliffe/kcl/hyperbolic-python/clusterData100/"
     outputJsons = f"{data}/outputJsons"
     files = os.listdir(outputJsons)
     bounds = {}

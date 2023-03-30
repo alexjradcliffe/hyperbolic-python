@@ -4,7 +4,7 @@ import numpy as np
 from decimal import Decimal, getcontext
 import operator
 import sys
-from hyperbolic import F, Polynomial
+from hyperbolic import F, Polynomial, jsonInput
 
 def read_output(lmax, directory):
     with open(f"{directory}/tmp/gapPy{lmax}_out/out.txt") as f:
@@ -25,7 +25,7 @@ def outputFromTxt(lmax, normalization, directory):
     n = list(map(Decimal, normalization))
     index = max_index(n)
     n0 = n.pop(index)
-    y.insert(index, (1-sum(map(operator.mul, n, y))/n0))
+    y.insert(index, (1 - sum(map(operator.mul, n, y)) / n0))
     return y
 
 def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, mac):
@@ -35,35 +35,17 @@ def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, mac):
         directory = "/users/k21187236/scratch/hyperbolic-python"
     os.chdir(directory)
     nn = 6
+    print("Testing", lambdaGap)
     normalization = [str(F(nn, 2 * nn + l)(0)) for l in range(lmax + 1)]
     objective = ["0"] * (lmax + 1)
-    polynomials = [[list(map(str, F(nn, 2 * nn + l).shift(-lambdaGap).coefficients)) for l in range(lmax + 1)]] + [
-                [["0"] if i != j else ["-1"] for i in range(lmax+1)] for j in list(range(0, lmax, 2))]
-    DampedRational = {
-                    "base": "0.367879",
-                    "poles": [],
-                    "constant": "1"
-                    }
-    jsonInput = {
-        "objective": objective,
-        "normalization": normalization,
-        "PositiveMatrixWithPrefactorArray": [
-            {
-                "DampedRational": DampedRational,
-                "polynomials": [
-                    [
-                        polynomial
-                    ]
-                ]
-            } for polynomial in polynomials
-        ]
-    }
+    polynomials = [[["0"] if i != j else ["-1"] for i in range(lmax + 1)] for j in list(range(0, lmax, 2))] + [
+                #    [[str(F(nn, 2 * nn + l)(0))] for l in range(lmax + 1)]] + [
+                   [list(map(str, F(nn, 2 * nn + l).shift(-lambdaGap).coefficients)) for l in range(lmax + 1)]]
     with open(f"{directory}/tmp/gapPy{lmax}.json", "w") as f:
-        json.dump(jsonInput, f, indent=4)
+        json.dump(jsonInput(objective, normalization, polynomials), f, indent=4)
     if mac:
         sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision={sdpbPrec} --input=/usr/local/share/sdpb/gapPy{lmax}.json --output=/usr/local/share/sdpb/gapPy{lmax}"
         sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} -s /usr/local/share/sdpb/gapPy{lmax}"
-        print(sdpb)
     else:
         sdp2input = f"sdp2input --precision={sdpbPrec} --input={directory}/tmp/gapPy{lmax}.json --output={directory}/tmp/gapPy{lmax}"
         sdpb = f"sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} -s {directory}/tmp/gapPy{lmax}"

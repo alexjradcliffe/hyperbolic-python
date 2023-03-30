@@ -4,7 +4,7 @@ import numpy as np
 from decimal import Decimal, getcontext
 import operator
 import sys
-from hyperbolic import F
+from hyperbolic import F, jsonInput
 
 def read_output(lmax, directory):
     with open(f"{directory}/tmp/opepy{lmax}_out/out.txt") as f:
@@ -33,27 +33,8 @@ def OPE_bound(lmax, pythonPrec, sdpbPrec, dualityGapThreshold, procsPerNode, mac
     objective = [str(F(nn, 2 * nn + l)(0)) for l in range(lmax + 1)]
     polynomials = [[list(map(str, F(nn, 2 * nn + l).coefficients)) for l in range(lmax + 1)]] + [
                 [["0"] if i != j else ["-1"] for i in range(lmax+1)] for j in list(range(2, lmax, 2))]
-    DampedRational = {
-                    "base": "0.367879",
-                    "poles": [],
-                    "constant": "1"
-                    }
-    jsonInput = {
-        "objective": objective,
-        "normalization": normalization,
-        "PositiveMatrixWithPrefactorArray": [
-            {
-                "DampedRational": DampedRational,
-                "polynomials": [
-                    [
-                        polynomial
-                    ]
-                ]
-            } for polynomial in polynomials
-        ]
-    }
     with open(f"{directory}/tmp/opepy{lmax}.json", "w") as f:
-        json.dump(jsonInput, f, indent=4)
+        json.dump(jsonInput(objective, normalization, polynomials), f, indent=4)
     if mac:
         sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision={sdpbPrec} --input=/usr/local/share/sdpb/opepy{lmax}.json --output=/usr/local/share/sdpb/opepy{lmax}"
         sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/opepy{lmax}"

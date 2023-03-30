@@ -138,3 +138,26 @@ def F(n, p):
                for b in range(p - 2 * n - a + 1)]
     terms = [term(n, p, a, b, c) for a, b, c, in triples]
     return sum(terms, Polynomial([0]))
+
+def DampedRational():
+    return {
+        "base": "0.367879",
+        "poles": [],
+        "constant": "1"
+    }
+
+def jsonInput(objective, normalization, polynomials):
+    return {
+        "objective": objective,
+        "normalization": normalization,
+        "PositiveMatrixWithPrefactorArray": [
+            {
+                "DampedRational": DampedRational(),
+                "polynomials": [
+                    [
+                        polynomial
+                    ]
+                ]
+            } for polynomial in polynomials
+        ]
+    }

@@ -28,7 +28,7 @@ def outputFromTxt(lmax, normalization, directory):
     y.insert(index, (1 - sum(map(operator.mul, n, y)) / n0))
     return y
 
-def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, mac):
+def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, dualityGapThreshold, mac):
     if mac:
         directory = "/Users/alexradcliffe/kcl/hyperbolic-python"
     else:
@@ -45,10 +45,10 @@ def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, mac):
         json.dump(jsonInput(objective, normalization, polynomials), f, indent=4)
     if mac:
         sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision={sdpbPrec} --input=/usr/local/share/sdpb/gapPy{lmax}.json --output=/usr/local/share/sdpb/gapPy{lmax}"
-        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} -s /usr/local/share/sdpb/gapPy{lmax}"
+        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/gapPy{lmax}"
     else:
         sdp2input = f"sdp2input --precision={sdpbPrec} --input={directory}/tmp/gapPy{lmax}.json --output={directory}/tmp/gapPy{lmax}"
-        sdpb = f"sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} -s {directory}/tmp/gapPy{lmax}"
+        sdpb = f"sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s {directory}/tmp/gapPy{lmax}"
     os.system(sdp2input)
     os.system(sdpb)
     return read_output(lmax, directory)
@@ -57,14 +57,14 @@ def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, mac):
 #     print(f"lmax={i}")
 #     OPE_bound(i, 200)
 
-def binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, procsPerNode, mac):
+def binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, procsPerNode, dualityGapThreshold, mac):
     if lambdaMax - lambdaMin < gapPrec:
         if mac:
             directory = "/Users/alexradcliffe/kcl/hyperbolic-python"
         else:
             directory = "/users/k21187236/scratch/hyperbolic-python"
         bound = lambdaMax
-        gap_test(bound, lmax, sdpbPrec, procsPerNode, mac)
+        gap_test(bound, lmax, sdpbPrec, procsPerNode, dualityGapThreshold, mac)
         nn = 6
         normalization = [str(F(nn, 2 * nn + l)(0)) for l in range(lmax + 1)]
         coefficients = outputFromTxt(lmax, normalization, directory)
@@ -80,11 +80,11 @@ def binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, proc
         return lambdaMax
     else:
         lambdaMiddle = (lambdaMin + lambdaMax) / 2
-        if gap_test(lambdaMiddle, lmax, sdpbPrec, procsPerNode, mac):
+        if gap_test(lambdaMiddle, lmax, sdpbPrec, procsPerNode, dualityGapThreshold, mac):
             lambdaMax = lambdaMiddle
         else:
             lambdaMin = lambdaMiddle
-        return binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, procsPerNode, mac)
+        return binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, procsPerNode, dualityGapThreshold, mac)
 
 if __name__ == "__main__":
     config_file = sys.argv[1]
@@ -99,6 +99,7 @@ if __name__ == "__main__":
     lmaxUpper = config["lmaxUpper"]
     sdpbPrec = config["sdpbPrec"]
     procsPerNode = config["procsPerNode"]
+    dualityGapThreshold = config["dualityGapThreshold"]
     oddOnly = config["oddOnly"]
     mac = config["mac"]
     step = 2 if oddOnly else 1
@@ -106,4 +107,4 @@ if __name__ == "__main__":
         lmaxLower += 1
     for lmax in range(lmaxLower, lmaxUpper + 1, step):
         print(lambdaMin, lambdaMax, gapPrec)
-        print(binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, procsPerNode, mac))
+        print(binarySearch(lambdaMin, lambdaMax, gapPrec, lmax, pythonPrec, sdpbPrec, procsPerNode, dualityGapThreshold, mac))

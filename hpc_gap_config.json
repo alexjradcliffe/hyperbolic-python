@@ -1,7 +1,7 @@
 {
     "lambdaMin" : 40,
     "lambdaMax" : 50,
-    "gapPrec" : 0.000000000001,
+    "gapPrec" : 0.00000000000000000001,
     "lmaxLower" : 3,
     "lmaxUpper" : 40,
     "procsPerNode": 1,

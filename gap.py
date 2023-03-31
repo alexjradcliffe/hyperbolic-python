@@ -45,10 +45,10 @@ def gap_test(lambdaGap, lmax, sdpbPrec, procsPerNode, dualityGapThreshold, mac):
         json.dump(jsonInput(objective, normalization, polynomials), f, indent=4)
     if mac:
         sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision={sdpbPrec} --input=/usr/local/share/sdpb/gapPy{lmax}.json --output=/usr/local/share/sdpb/gapPy{lmax}"
-        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/gapPy{lmax}"
+        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} --primalErrorThreshold={dualityGapThreshold} --dualErrorThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/gapPy{lmax}"
     else:
         sdp2input = f"sdp2input --precision={sdpbPrec} --input={directory}/tmp/gapPy{lmax}.json --output={directory}/tmp/gapPy{lmax}"
-        sdpb = f"sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s {directory}/tmp/gapPy{lmax}"
+        sdpb = f"sdpb  --findPrimalFeasible --findDualFeasible --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} --primalErrorThreshold={dualityGapThreshold} --dualErrorThreshold={dualityGapThreshold} -s {directory}/tmp/gapPy{lmax}"
     os.system(sdp2input)
     os.system(sdpb)
     return read_output(lmax, directory)

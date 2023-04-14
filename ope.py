@@ -37,11 +37,11 @@ def OPE_bound(lmax, pythonPrec, sdpbPrec, dualityGapThreshold, procsPerNode, mac
         json.dump(jsonInput(objective, normalization, polynomials), f, indent=4)
     if mac:
         sdp2input = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdp2input --precision={sdpbPrec} --input=/usr/local/share/sdpb/opepy{lmax}.json --output=/usr/local/share/sdpb/opepy{lmax}"
-        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/opepy{lmax}"
+        sdpb = f"/usr/local/bin/docker run -v {directory}/tmp/:/usr/local/share/sdpb wlandry/sdpb:2.5.1 mpirun --allow-run-as-root -n 4 sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} --primalErrorThreshold={dualityGapThreshold} --dualErrorThreshold={dualityGapThreshold} -s /usr/local/share/sdpb/opepy{lmax}"
         print(sdpb)
     else:
         sdp2input = f"sdp2input --precision={sdpbPrec} --input={directory}/tmp/opepy{lmax}.json --output={directory}/tmp/opepy{lmax}"
-        sdpb = f"sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} -s {directory}/tmp/opepy{lmax}"
+        sdpb = f"sdpb --precision={sdpbPrec} --procsPerNode={procsPerNode} --dualityGapThreshold={dualityGapThreshold} --primalErrorThreshold={dualityGapThreshold} --dualErrorThreshold={dualityGapThreshold} -s {directory}/tmp/opepy{lmax}"
     os.system(sdp2input)
     os.system(sdpb)
     bound = read_output(lmax, directory)

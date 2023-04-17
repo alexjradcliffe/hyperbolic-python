@@ -1,0 +1,13 @@
+{
+    "lambdaMin" : 40,
+    "lambdaMax" : 50,
+    "gapPrec" : 0.000000000001,
+    "lmaxLower" : 3,
+    "lmaxUpper" : 80,
+    "procsPerNode" : 4,
+    "dualityGapThreshold" : 1e-60,
+    "pythonPrec" : 500,
+    "sdpbPrec" : 2048,
+    "mac" : true,
+    "oddOnly" : true
+}

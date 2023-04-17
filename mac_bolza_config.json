@@ -1,0 +1,16 @@
+{
+    "lambdaMin" : 1,
+    "lambdaMax" : 10,
+    "n" : 1,
+    "ln" : 2,
+    "gapPrec" : 0.000000000001,
+    "lmaxLower" : 3,
+    "lmaxUpper" : 40,
+    "procsPerNode" : 4,
+    "dualityGapThreshold" : 1e-60,
+    "pythonPrec" : 500,
+    "sdpbPrec" : 2048,
+    "workingDir" : "/Users/alexradcliffe/kcl/hyperbolic-python/bolza",
+    "mac" : true,
+    "oddOnly" : true
+}

@@ -1,13 +1,16 @@
 {
-    "lambdaMin" : 40,
-    "lambdaMax" : 50,
-    "gapPrec" : 0.000000000001,
-    "lmaxLower" : 3,
-    "lmaxUpper" : 80,
+    "lambdaMin" : 3.83,
+    "lambdaMax" : 3.84,
+    "n" : 1,
+    "ln" : 2,
+    "gapPrec" : 1e-6,
+    "lmaxLower" : 23,
+    "lmaxUpper" : 23,
     "procsPerNode" : 4,
     "dualityGapThreshold" : 1e-60,
-    "pythonPrec" : 500,
+    "pythonPrec" : 200,
     "sdpbPrec" : 2048,
+    "workingDir" : "/Users/alexradcliffe/kcl/hyperbolic-python/tmpDir",
     "mac" : true,
     "oddOnly" : true
 }

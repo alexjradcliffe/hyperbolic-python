@@ -48,7 +48,7 @@ class Polynomial:
     def __mul__(self, other):
         c1 = self.coefficients
         c2 = other.coefficients
-        res = [0] * (len(c1) + len(c2) - 1)
+        res = [Decimal(0)] * (len(c1) + len(c2) - 1)
         for i, ci in enumerate(c1):
             for j, cj in enumerate(c2):
                 res[i+j] += ci * cj
@@ -59,7 +59,7 @@ class Polynomial:
         Returns self ** k
         """
         if k == 0:
-            return Polynomial([1])
+            return Polynomial([Decimal(1)])
         else:
             return product([self for i in range(k)])
 
@@ -72,9 +72,9 @@ class Polynomial:
         """
         Takes a polynomial p(x) and returns p(x-b)
         """
-        shifted = Polynomial([0])
+        shifted = Polynomial([Decimal(0)])
         for k, coeff in enumerate(self.coefficients):
-            shifted += Polynomial([coeff])*Polynomial([-b, 1])**k
+            shifted += Polynomial([coeff])*Polynomial([-b, Decimal(1)])**k
         return shifted
 
     def __str__(self):
@@ -129,8 +129,8 @@ def factorial(n):
 def term(n, p, a, b, c):
     num = (-1) ** a * Pochhammer(2 * n + a, c) * Pochhammer(1 - p, b) ** 2
     den = factorial(c) * Pochhammer(2 - 2 * p, b) * factorial(b) * factorial(a) ** 2
-    prodTerms = [Polynomial([k * (k + 1), 1]) for k in range(a)]
-    return product([Polynomial([Decimal(num) / den])] + prodTerms)
+    prodTerms = [Polynomial([Decimal(k * (k + 1)), Decimal(1)]) for k in range(a)]
+    return product([Polynomial([Decimal(num) / Decimal(den)])] + prodTerms)
 
 def F(n, p):
     triples = [(a, b, p - 2 * n - a - b)

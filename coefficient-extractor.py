@@ -8,67 +8,43 @@ import math
 
 def processJsons(data):
     outputJsons = f"{data}/outputJsons"
-    print(outputJsons)
     files = os.listdir(outputJsons)
     bounds = {}
-    coefficients = {}
-    qs = {}
-    rs = {}
+    possibleKeys = ["coefficients", "qs", "rs", "alphas", "betas", "gammas", "deltas"]
+    keyDicts = {key : {} for key in possibleKeys}
     for file in files:
         with open(f"{outputJsons}/{file}") as f:
             j = json.load(f)
         lMax = j["lmax"]
         bounds[lMax] = j["bound"]
-        if "coefficients" in j:
-            coefficients[lMax] = {}
-            for i, coeff in enumerate(j["coefficients"]):
-                coefficients[lMax][i] = coeff
-            lMaxs = sorted(bounds.keys())
-            boundList = [bounds[i] for i in lMaxs]
-            coefficientList = [coefficients[i] for i in lMaxs]
-            qList = []
-            rList = []
-            with open(f"{data}/lMaxs.json", "w") as f:
-                json.dump(lMaxs, f, indent = 4)
-            with open(f"{data}/bounds.json", "w") as f:
-                json.dump(boundList, f, indent = 4)
-            with open(f"{data}/coefficients.json", "w") as f:
-                json.dump(coefficientList, f, indent = 4)
-        else:
-            qs[lMax] = {}
-            rs[lMax] = {}
-            for i, q in enumerate(j["qs"]):
-                qs[lMax][i] = q
-            for i, r in enumerate(j["rs"]):
-                rs[lMax][i] = r
-            lMaxs = sorted(bounds.keys())
-            boundList = [bounds[i] for i in lMaxs]
-            coefficientList = []
-            qList = [qs[i] for i in lMaxs]
-            rList = [rs[i] for i in lMaxs]
-            with open(f"{data}/lMaxs.json", "w") as f:
-                json.dump(lMaxs, f, indent = 4)
-            with open(f"{data}/bounds.json", "w") as f:
-                json.dump(boundList, f, indent = 4)
-            with open(f"{data}/qs.json", "w") as f:
-                json.dump(qList, f, indent = 4)
-            with open(f"{data}/rs.json", "w") as f:
-                json.dump(rList, f, indent = 4)
-    return lMaxs, coefficientList, qList, rList
+        lMaxs = sorted(bounds.keys())
+        for key in possibleKeys:
+            if key in j:
+                keyDicts[key][lMax] = {}
+                for i, coeff in enumerate(j[key]):
+                    keyDicts[key][lMax][i] = coeff
+    with open(f"{data}/lMaxs.json", "w") as f:
+        json.dump(lMaxs, f, indent = 4)
+    boundList = [bounds[i] for i in lMaxs]
+    with open(f"{data}/bounds.json", "w") as f:
+        json.dump(boundList, f, indent = 4)
+    keyLists = {key : [] for key in possibleKeys}
+    for key in possibleKeys:
+        if len(keyDicts[key]) != 0:
+            keyLists[key] = [keyDicts[key][i] for i in lMaxs]
+            with open(f"{data}/{key}.json", "w") as f:
+                json.dump(keyLists[key], f, indent = 4)
+    return lMaxs, keyLists
 
-def coeffsToSparseMatrices(coefficients):
+def coeffsToSparseMatrices(lMaxs, coefficients):
     sparseMatrix = []
-    lMaxs = []
-    for coeffs in coefficients:
-        print("coeffs", coeffs)
-        lMax = len(coeffs) - 1
-        lMaxs.append(lMax)
+    for lMax, coeffs in zip(lMaxs, coefficients):
         for index, coeff in coeffs.items():
             sparseMatrix.append(((lMax, index), Decimal(coeff)))
-    return lMaxs, sparseMatrix
+    return sparseMatrix
 
-def coeffMatrices(coefficients):
-    lMaxs, sparseMatrix = coeffsToSparseMatrices(coefficients)
+def coeffMatrices(lMaxs, coefficients):
+    sparseMatrix = coeffsToSparseMatrices(lMaxs, coefficients)
     lMaxMax = max(lMaxs)
     coeffsByLMax = {lMax : {} for lMax in lMaxs}
     coeffsByIndex = {index : {} for index in range(lMaxMax + 1)}
@@ -98,21 +74,15 @@ if __name__ == "__main__":
     data = sys.argv[1]
     if data[-1] == "/":
         data = data[::-1]
-    lMaxs, coefficients, qs, rs = processJsons(data)
+    lMaxs, keyLists = processJsons(data)
+    print(keyLists["alphas"])
     
     getcontext().prec = 500
-    if coefficients:
-        coeffsByLMax, coeffsByIndex = coeffMatrices(coefficients)
-        makePlots(lMaxs, coeffsByLMax, "lMax", "coeffs", data)
-        lMaxMax = max(lMaxs)
-        indices = list(range(lMaxMax + 1))
-        makePlots(indices, coeffsByIndex, "index", "coeffs", data)
-    else:
-        qsByLMax, qsByIndex = coeffMatrices(qs)
-        makePlots(lMaxs, qsByLMax, "lMax", "qs", data)
-        lMaxMax = max(lMaxs)
-        indices = list(range(lMaxMax + 1))
-        makePlots(indices, qsByIndex, "index", "qs", data)
-        rsByLMax, rsByIndex = coeffMatrices(rs)
-        makePlots(lMaxs, rsByLMax, "lMax", "rs", data)
-        makePlots(indices, rsByIndex, "index", "rs", data)
+    possibleKeys = ["coefficients", "qs", "rs", "alphas", "betas", "gammas", "deltas"]
+    for key in possibleKeys:
+        if keyLists[key]:
+            coeffsByLMax, coeffsByIndex = coeffMatrices(lMaxs, keyLists[key])
+            makePlots(lMaxs, coeffsByLMax, "lMax", key, data)
+            lMaxMax = max(lMaxs)
+            indices = list(range(lMaxMax + 1))
+            makePlots(indices, coeffsByIndex, "index", key, data)

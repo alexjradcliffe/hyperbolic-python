@@ -75,7 +75,6 @@ if __name__ == "__main__":
     if data[-1] == "/":
         data = data[::-1]
     lMaxs, keyLists = processJsons(data)
-    print(keyLists["alphas"])
     
     getcontext().prec = 500
     possibleKeys = ["coefficients", "qs", "rs", "alphas", "betas", "gammas", "deltas"]
